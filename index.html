@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Pac‑Man Style Game</title>
+  <style>
+    body { background: #000; margin: 0; display: flex; flex-direction: column; align-items: center; color: #fff; font-family: Arial; }
+    canvas { background: #111; margin-top: 20px; border: 3px solid #00f; }
+    #score { font-size: 24px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Pac‑Man Style Game</h1>
+  <div id="score">Score: 0</div>
+  <canvas id="game" width="448" height="496"></canvas>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const tile = 16;
+
+    let score = 0;
+    const scoreBox = document.getElementById("score");
+
+    // Player
+    const player = { x: 14 * tile, y: 23 * tile, dx: 0, dy: 0, speed: 2 };
+
+    // Simple pellets
+    const pellets = [];
+    for (let r = 2; r < 28; r++) {
+      for (let c = 2; c < 26; c++) {
+        pellets.push({ x: c * tile + 8, y: r * tile + 8, eaten: false });
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") { player.dx = 0; player.dy = -player.speed; }
+      if (e.key === "ArrowDown") { player.dx = 0; player.dy = player.speed; }
+      if (e.key === "ArrowLeft") { player.dx = -player.speed; player.dy = 0; }
+      if (e.key === "ArrowRight") { player.dx = player.speed; player.dy = 0; }
+    });
+
+    function drawPlayer() {
+      ctx.beginPath();
+      ctx.fillStyle = "yellow";
+      ctx.arc(player.x, player.y, 10, 0.25 * Math.PI, 1.75 * Math.PI);
+      ctx.lineTo(player.x, player.y);
+      ctx.fill();
+    }
+
+    function drawPellets() {
+      ctx.fillStyle = "white";
+      pellets.forEach(p => {
+        if (!p.eaten) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    function update() {
+      player.x += player.dx;
+      player.y += player.dy;
+
+      pellets.forEach(p => {
+        if (!p.eaten && Math.hypot(player.x - p.x, player.y - p.y) < 10) {
+          p.eaten = true;
+          score++;
+          document.getElementById('waka').currentTime = 0;
+          document.getElementById('waka').play();
+          scoreBox.textContent = "Score: " + score;
+        }
+      });
+    }
+
+    function loop() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      update();
+      drawPellets();
+      drawPlayer();
+      requestAnimationFrame(loop);
+    }
+
+    // Start background music
+    document.getElementById('bgmusic').volume = 0.4;
+    document.getElementById('bgmusic').play();
+
+    loop();
+  </script>
+  <audio id="waka" src="waka.wav"></audio>
+  <audio id="bgmusic" src="background.mp3" loop></audio>
+  <audio id="death" src="death.wav"></audio>
+</body>
+</html>
